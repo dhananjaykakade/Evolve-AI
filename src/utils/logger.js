@@ -1,7 +1,9 @@
 import winston from "winston";
-import chalk from "chalk"; // ✅ No warning
-
+import chalk from "chalk";
 import DailyRotateFile from "winston-daily-rotate-file";
+
+// Detect environment
+const isDev = process.env.NODE_ENV !== "production";
 
 // Log levels
 const logLevels = {
@@ -14,7 +16,7 @@ const logLevels = {
   silly: 6,
 };
 
-// Chalk colors for different levels
+// Chalk colors for different log levels
 const logColors = {
   error: chalk.red.bold,
   warn: chalk.yellow.bold,
@@ -25,24 +27,37 @@ const logColors = {
   silly: chalk.gray,
 };
 
+// Console format (shows stack trace in dev)
+const consoleFormat = winston.format.printf(({ level, message, timestamp, stack }) => {
+  const colorFn = logColors[level] || chalk.white;
+  const coloredLevel = colorFn(level.toUpperCase());
+  const coloredTimestamp = chalk.gray(`[${timestamp}]`);
+  const processInfo = chalk.yellow(`(PID: ${process.pid})`);
+  const memoryUsage = chalk.cyan(`(Memory: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB)`);
+  const stackTrace = stack && isDev ? `\n${chalk.red(stack)}` : ""; // Show stack in dev console
+
+  return `${coloredTimestamp} ${coloredLevel}: ${message} ${processInfo} ${memoryUsage}${stackTrace}`;
+});
+
+// File format (always logs stack traces for errors)
+const fileFormat = winston.format.printf(({ level, message, timestamp, stack }) => {
+  return `${timestamp} [${level.toUpperCase()}]: ${message}${stack ? `\nStack Trace:\n${stack}` : ""}`;
+});
+
 // Winston Logger Configuration
 const logger = winston.createLogger({
   levels: logLevels,
   format: winston.format.combine(
     winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    winston.format.printf(({ level, message, timestamp }) => {
-      const colorFn = logColors[level] || chalk.white;
-      const coloredLevel = colorFn(level.toUpperCase());
-      const coloredTimestamp = chalk.gray(`[${timestamp}]`);
-      const processInfo = chalk.yellow(`(PID: ${process.pid})`);
-      const memoryUsage = chalk.cyan(
-        `(Memory: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB)`
-      );
-      return `${coloredTimestamp} ${coloredLevel}: ${message} ${processInfo} ${memoryUsage}`;
-    })
+    winston.format.errors({ stack: true }) // Captures stack traces
   ),
   transports: [
-    new winston.transports.Console(),
+    new winston.transports.Console({
+      level: isDev ? "debug" : "info",
+      format: consoleFormat, // Pretty logs for console
+    }),
+
+    // General logs
     new DailyRotateFile({
       filename: "logs/application-%DATE%.log",
       datePattern: "YYYY-MM-DD",
@@ -50,13 +65,37 @@ const logger = winston.createLogger({
       maxSize: "20m",
       maxFiles: "30d",
       level: "info",
+      format: fileFormat, // Store logs in file format
+    }),
+
+    // Error logs with stack traces
+    new DailyRotateFile({
+      filename: "logs/error-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      zippedArchive: true,
+      maxSize: "10m",
+      maxFiles: "30d",
+      level: "error",
+      format: fileFormat, // Ensure stack traces are logged
     }),
   ],
 });
 
-// Middleware for logging HTTP requests (if using Express)
+// Middleware for logging HTTP requests in Express
 const httpLogger = (req, res, next) => {
-  logger.http(`${req.method} ${req.url} - ${req.ip}`);
+  const start = process.hrtime(); // Start time for response duration
+  res.on("finish", () => {
+    const duration = process.hrtime(start);
+    const responseTime = (duration[0] * 1e3 + duration[1] / 1e6).toFixed(2); // Convert to ms
+    const logMessage = `${req.method} ${req.url} - ${res.statusCode} (${responseTime}ms) - ${req.ip}`;
+
+    if (res.statusCode >= 400) {
+      logger.warn(logMessage);
+    } else {
+      logger.http(logMessage);
+    }
+  });
+
   next();
 };
 

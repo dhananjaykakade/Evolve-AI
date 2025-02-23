@@ -17,6 +17,7 @@ let server;
 const startServer = () => {
   try {
     server = app.listen(PORT, () => {
+        
         logger.info(`🚀 Server running in ${config.NODE_ENV} mode on http://localhost:${PORT}`);
     });
   } catch (error) {
