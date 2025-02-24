@@ -14,16 +14,18 @@
   "author": "",
   "type": "module",
   "main": "index.js",
-"scripts": {
-  "start": "cross-env NODE_ENV=production node server.js",
-  "dev": "cross-env NODE_ENV=development nodemon server.js",
-  "test": "echo \"Error: no test specified\" && exit 1"
-},
+  "scripts": {
+    "start": "cross-env NODE_ENV=production node server.js",
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+ "test": "cross-env NODE_ENV=test node server.test.js"
+  },
   "dependencies": {
     "@prisma/client": "^6.4.1",
     "chalk": "^5.4.1",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
   },

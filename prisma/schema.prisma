@@ -13,4 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
+model HealthCheck {
+  Id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    createdAt DateTime @default(now())
+}

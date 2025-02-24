@@ -27,7 +27,7 @@ const logColors = {
   silly: chalk.gray,
 };
 
-// Console format (shows stack trace in dev)
+// Console format (prettified output with colors)
 const consoleFormat = winston.format.printf(({ level, message, timestamp, stack }) => {
   const colorFn = logColors[level] || chalk.white;
   const coloredLevel = colorFn(level.toUpperCase());
@@ -36,12 +36,26 @@ const consoleFormat = winston.format.printf(({ level, message, timestamp, stack 
   const memoryUsage = chalk.cyan(`(Memory: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB)`);
   const stackTrace = stack && isDev ? `\n${chalk.red(stack)}` : ""; // Show stack in dev console
 
-  return `${coloredTimestamp} ${coloredLevel}: ${message} ${processInfo} ${memoryUsage}${stackTrace}`;
+  if (message.includes('development'|| 'production')) {
+    return `${coloredTimestamp} ${coloredLevel}: ${message} ${processInfo} ${memoryUsage}${stackTrace}`;
+  } else {
+    // Return the log message without memoryUsage
+    return `${coloredTimestamp} ${coloredLevel}: ${message} ${stackTrace}`;
+  }
 });
 
-// File format (always logs stack traces for errors)
+// File format (pretty and easy to read)
 const fileFormat = winston.format.printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} [${level.toUpperCase()}]: ${message}${stack ? `\nStack Trace:\n${stack}` : ""}`;
+  return [
+    `----------------------------------------`,
+    `Timestamp:  ${timestamp}`,
+    `Level:      ${level.toUpperCase()}`,
+    `Message:    ${message}`,
+    stack ? `Stack Trace:\n${stack}` : null,
+    `----------------------------------------`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 });
 
 // Winston Logger Configuration
@@ -57,7 +71,7 @@ const logger = winston.createLogger({
       format: consoleFormat, // Pretty logs for console
     }),
 
-    // General logs
+    // General logs (easy to read format)
     new DailyRotateFile({
       filename: "logs/application-%DATE%.log",
       datePattern: "YYYY-MM-DD",
@@ -68,7 +82,7 @@ const logger = winston.createLogger({
       format: fileFormat, // Store logs in file format
     }),
 
-    // Error logs with stack traces
+    // Error logs with stack traces (formatted properly)
     new DailyRotateFile({
       filename: "logs/error-%DATE%.log",
       datePattern: "YYYY-MM-DD",
