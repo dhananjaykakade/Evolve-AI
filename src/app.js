@@ -6,6 +6,7 @@ import errorMiddleware from "./middleware/errorMiddleware.js";
 import CustomError from "./utils/CustomError.js";
 import ResponseHandler from "./utils/CustomResponse.js";
 
+
 const app = express();
 
 // Define allowed origins for production
@@ -29,15 +30,20 @@ const corsOptions = {
   optionsSuccessStatus: 204, // Handles preflight requests better
 };
 
+
 // Apply CORS middleware
 app.use(cors(corsOptions));
-app.use(httpLogger);
+
+if(process.env.NODE_ENV !== 'test'){
+
+  app.use(httpLogger);
+}
 
 // Default forbidden route
 app.get("/", (req, res) => ResponseHandler.forbidden(res));
 
 // All routes prefixed with /api
-app.use("/api", routes);
+app.use("/api/test", routes);
 
 // Handle 404 Not Found
 app.use((req, res, next) => {

@@ -13,7 +13,7 @@ export const runPreStartChecks = async (PORT) => {
     await checkDatabaseConnection();
     config.validateEnvVariables();
     checkRequiredFolders();
-    logger.info("✅ All pre-start checks passed. Starting the server...");
+
   } catch (error) {
     logger.error("❌ Pre-start check failed:", error.message);
     process.exit(1);

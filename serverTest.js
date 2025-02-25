@@ -1,6 +1,7 @@
-import { runPreStartChecks } from "./serverChecks.js";
-import config from "./src/config/config.js";
-import { logger } from "./src/utils/logger.js";
+
+ import { runPreStartChecks } from "./serverChecks.js";
+ import config from "./src/config/config.js";
+ import { logger } from "./src/utils/logger.js";
 
 const PORT = config.PORT;
 

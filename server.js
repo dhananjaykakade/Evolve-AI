@@ -3,7 +3,7 @@ import { logger } from "./src/utils/logger.js";
 import config from "./src/config/config.js";
 import http from "http";
 import { execSync } from "child_process";
-import { runTests } from "./server.test.js";
+import { runTests } from "./serverTest.js";
 import os from "os";
 import { EventEmitter } from "events";
 
