@@ -6,7 +6,10 @@ jest.mock("../../src/utils/logger.js", () => ({
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
+  debug: jest.fn(),
+  httpLogger: (req, res, next) => next(), // Mock valid middleware
 }));
+
 
 
 /*{

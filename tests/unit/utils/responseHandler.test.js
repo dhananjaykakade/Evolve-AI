@@ -7,7 +7,7 @@ app.use(express.json());
 
 // Sample routes for testing
 app.get("/success", (req, res) => {
-  ResponseHandler.success(res, 200, "Success Message", { key: "value" });
+  ResponseHandler.success(res, 200, "Success", { key: "value" });
 });
 
 app.get("/error", (req, res) => {
@@ -53,7 +53,7 @@ describe("ResponseHandler Class", () => {
     expect(res.body).toEqual({
       success: true,
       statusCode: 200,
-      message: "Success Message",
+      message: "Success",
       data: { key: "value" },
     });
   });
@@ -117,4 +117,7 @@ describe("ResponseHandler Class", () => {
     const res = await request(app).get("/service-unavailable");
     expect(res.status).toBe(503);
   });
-});
+
+
+  });
+

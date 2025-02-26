@@ -62,7 +62,16 @@ const startServer = async (port = PORT, retries = 3) => {
 
   try {
     await runTests();
+
+    // execute the tests with npm test runner with jest if environment is production 
+
+    if (config.NODE_ENV === "production") {
+      logger.info("🔥 Running tests in production environment...")
+      execSync("npm test")
+    }
     killProcessOnPort(port);
+
+    
 
     server = http.createServer(app);
 

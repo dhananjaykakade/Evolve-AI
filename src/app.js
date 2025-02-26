@@ -47,7 +47,7 @@ app.use("/api/test", routes);
 
 // Handle 404 Not Found
 app.use((req, res, next) => {
-  next(new CustomError("Route Not Found", 404));
+  ResponseHandler.notFound(res);
 });
 
 // Global error handler middleware
