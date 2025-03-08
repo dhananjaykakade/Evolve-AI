@@ -3,12 +3,12 @@ import path from "path";
 import { logger } from "./logger.js";
 import { exec } from "child_process";
 
-const requiredFolders = ["logs",'src','src/controllers','src/middleware',,'src/routes','src/utils','src/config','src/service','prisma'];
+const requiredFolders = ["logs",'src','src/controllers','src/middleware',,'src/routes','src/utils','src/config','src/service','prisma','node_modules'];
 
 export const checkRequiredFolders = () => {
   requiredFolders.forEach((folder) => {
     if (!fs.existsSync(path.resolve(folder))) {
-      if(fs.existsSync(path.resolve(folder)=== 'prisma')){
+      if(folder=== 'prisma'){
         logger.error(` Prisma folder does not exist. Creating prisma folder...`);
         // execute the prisma 
         exec('npx prisma init', (error, stdout, stderr) => {
@@ -18,8 +18,6 @@ export const checkRequiredFolders = () => {
           }
           logger.info(`Prisma schema generated successfully.`);
         });
-
-        process.exit(1);
       }
       logger.error(`🚀 Creating missing folder: ${folder}`);
       fs.mkdirSync(path.resolve(folder), { recursive: true });

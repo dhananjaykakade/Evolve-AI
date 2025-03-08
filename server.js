@@ -61,6 +61,7 @@ const startServer = async (port = PORT, retries = 3) => {
   }
 
   try {
+  
     await runTests();
 
     // execute the tests with npm test runner with jest if environment is production 

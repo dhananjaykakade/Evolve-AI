@@ -7,7 +7,7 @@ dotenv.config();
 class Config {
   constructor() {
     // Required environment variables
-    this.requiredEnvVars = ["PORT", "JWT_SECRET", "DATABASE_URL"];
+    this.requiredEnvVars = ["PORT", "JWT_SECRET", "DATABASE_URL",];
 
     // Validate environment variables
 
@@ -41,6 +41,7 @@ class Config {
    */
   validateEnvVariables() {
     const missingVars = this.requiredEnvVars.filter((varName) => !process.env[varName]);
+
 
     if (missingVars.length > 0) {
       logger.error(`❌ Missing environment variables: ${missingVars.join(", ")}`);
