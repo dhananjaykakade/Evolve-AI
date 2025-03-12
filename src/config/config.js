@@ -34,6 +34,10 @@ class Config {
     this.ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
       ? process.env.ALLOWED_ORIGINS.split(",")
       : ["*"];
+
+    // Email Config
+    this.EMAIL_USER = process.env.EMAIL_USER;
+    this.EMAIL_PASS = process.env.EMAIL_PASS;
   }
 
   /**
