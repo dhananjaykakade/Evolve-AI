@@ -19,6 +19,15 @@ Before setting up the project, ensure that you have the following installed:
 
 If you haven’t installed **Chocolatey**, run the following command in **PowerShell (Administrator Mode)**:
 
+Run automation script or install manually
+Here is automation script
+
+```powershell
+npm run install:redis
+```
+
+For manual installation follow the commands given below
+
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 ```
