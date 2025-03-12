@@ -1,55 +1,17 @@
+// server.js
 import app from "./src/app.js";
 import { logger } from "./src/utils/logger.js";
 import config from "./src/config/config.js";
 import http from "http";
-import { execSync } from "child_process";
-import { runTests } from "./serverTest.js";
-import os from "os";
 import { EventEmitter } from "events";
+import startRedis from "./scripts/startRedis.js";
+import killProcessOnPort from "./scripts/killProcess.js";
+import executeServerTests from "./scripts/serverTestRunner.js";
 
 EventEmitter.defaultMaxListeners = 20;
-
 const PORT = config.PORT || 9000;
 let server;
 let shuttingDown = false; // Prevent multiple shutdown attempts
-
-/**
- * Kill any process running on the given port, using OS-specific commands
- */
-const killProcessOnPort = (port) => {
-  try {
-    if (os.platform() === "win32") {
-      const output = execSync(`netstat -ano | findstr :${port}`).toString();
-      const lines = output.split("\n").filter((line) => line.includes("LISTENING"));
-
-      if (lines.length > 0) {
-        const pid = lines[0].trim().split(/\s+/).pop();
-        if (pid) {
-          logger.warn(`⚠️ Port ${port} is in use. Killing process ${pid}...`);
-          try {
-            execSync(`taskkill /F /PID ${pid}`);
-            logger.info(`✅ Killed process ${pid} on port ${port}`);
-          } catch (error) {
-            logger.error(`❌ Failed to kill process ${pid}: ${error.message}`);
-          }
-        }
-      }
-    } else {
-      const output = execSync(`lsof -t -i:${port}`).toString().trim();
-      if (output) {
-        logger.warn(`⚠️ Port ${port} is in use. Killing process ${output}...`);
-        try {
-          execSync(`kill -9 ${output}`);
-          logger.info(`✅ Killed process ${output} on port ${port}`);
-        } catch (error) {
-          logger.error(`❌ Failed to kill process ${output}: ${error.message}`);
-        }
-      }
-    }
-  } catch (error) {
-    logger.info(`ℹ️ No existing process found on port ${port}`);
-  }
-};
 
 /**
  * Start the server safely, ensuring no duplicate instances
@@ -61,21 +23,11 @@ const startServer = async (port = PORT, retries = 3) => {
   }
 
   try {
-  
-    await runTests();
-
-    // execute the tests with npm test runner with jest if environment is production 
-
-    if (config.NODE_ENV === "production") {
-      logger.info("🔥 Running tests in production environment...")
-      execSync("npm test")
-    }
+    await executeServerTests();
     killProcessOnPort(port);
-
-    
+    startRedis();
 
     server = http.createServer(app);
-
     server.listen(port, () => {
       logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
       logger.info(`🚀 Server running in ${config.NODE_ENV} mode on http://localhost:${port} (PID: ${process.pid})`);
@@ -105,7 +57,6 @@ const setupShutdownHandlers = () => {
   const shutdown = async (signal) => {
     if (shuttingDown) return;
     shuttingDown = true;
-
     logger.warn(`🛑 Received ${signal}, shutting down gracefully...`);
 
     if (server) {
@@ -135,5 +86,3 @@ process.on('unhandledRejection', (reason) => {
 // Start the server and setup handlers
 startServer();
 setupShutdownHandlers();
-
-export { killProcessOnPort };
