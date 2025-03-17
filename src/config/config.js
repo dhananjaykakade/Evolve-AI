@@ -7,7 +7,7 @@ dotenv.config();
 class Config {
   constructor() {
     // Required environment variables
-    this.requiredEnvVars = ["PORT", "JWT_SECRET", "DATABASE_URL",];
+    this.requiredEnvVars = ["PORT", "JWT_SECRET", "DATABASE_URL","JWT_REFRESH_SECRET","EMAIL_USER","EMAIL_PASS"];
 
     // Validate environment variables
 
@@ -18,6 +18,7 @@ class Config {
 
     // Security Config
     this.JWT_SECRET = process.env.JWT_SECRET || "default_secret";
+    this.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "default refresh token secret";
     this.JWT_EXPIRATION = process.env.JWT_EXPIRATION || "1h";
 
     // Database Config
