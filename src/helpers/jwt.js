@@ -1,31 +1,31 @@
 import jwt from "jsonwebtoken";
 import config from "../config/config.js"
 
-let {JWT_SECRET} = config
-
-
+let {JWT_SECRET,JWT_REFRESH_SECRET } = config
 /**
- * Generates a JWT token for a given user.
- * Signs the user's ID and role with a secret key, expiring in 1 hour.
- * @param {object} user - The user object containing id and role.
- * @returns {string} The generated JWT token.
-*/
-const generateToken = (user) => {
-  return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
-    expiresIn: "1h",
-  });
-};
-
-
-/**
- * Verifies a JWT token.
- * Decodes the token and verifies its signature against the secret key.
- * @param {string} token - The JWT token to verify.
- * @returns {object} The decoded payload if the token is valid.
+ * Generates an access token (short-lived)
  */
-
-const verifyToken = (token) => {
-  return jwt.verify(token,JWT_SECRET);
+export const generateToken = (user) => {
+    return jwt.sign({ Id: user.Id, role: user.role }, JWT_SECRET, { expiresIn: "15m" });
 };
 
-export { generateToken, verifyToken };
+/**
+ * Generates a refresh token (long-lived)
+ */
+export const generateRefreshToken = (user) => {
+    return jwt.sign({ Id: user.Id, role: user.role }, JWT_REFRESH_SECRET, { expiresIn: "7d" });
+};
+
+/**
+ * Verifies an access token
+ */
+export const verifyToken = (token) => {
+    return jwt.verify(token, JWT_SECRET);
+};
+
+/**
+ * Verifies a refresh token
+ */
+export const verifyRefreshToken = (token) => {
+    return jwt.verify(token, JWT_REFRESH_SECRET);
+};
