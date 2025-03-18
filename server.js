@@ -55,7 +55,9 @@ const startServer = async (port = PORT, retries = 3) => {
  */
 const setupShutdownHandlers = () => {
   const shutdown = async (signal) => {
-    if (shuttingDown) return;
+    if (shuttingDown) {
+      return;
+    }
     shuttingDown = true;
     logger.warn(`🛑 Received ${signal}, shutting down gracefully...`);
 

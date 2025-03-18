@@ -9,7 +9,7 @@ import CustomError from "./utils/CustomError.js";
 import ResponseHandler from "./utils/CustomResponse.js";
 import emailRoutes from "./routes/emailRoutes.js";
 import authRouter from "./routes/auth.router.js";
-import worker from "./helpers/emailProcessor.js";
+
 
 
 const app = express();

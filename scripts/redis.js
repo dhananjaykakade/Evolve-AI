@@ -2,7 +2,30 @@ import { execSync } from "child_process";
 import fs from "fs";
 import os from "os";
 
-const isWindows = os.platform() === "win32";
+/**
+ * Check if running as admin
+ */
+const isAdmin = () => {
+  try {
+    execSync("net session", { stdio: "ignore" });
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Relaunch the script with admin privileges (Windows only)
+ */
+const runAsAdmin = () => {
+  if (!isAdmin()) {
+    console.log("⚠️ This script requires administrator privileges. Relaunching as admin...");
+    execSync(`powershell Start-Process node -ArgumentList "'${process.argv[1]}'" -Verb RunAs`, {
+      stdio: "inherit",
+    });
+    process.exit(0);
+  }
+};
 
 /**
  * Execute a command and return stdout
@@ -19,16 +42,11 @@ const runCommand = (cmd) => {
  * Check if Chocolatey is installed
  */
 const isChocolateyInstalled = () => {
-  try {
-    runCommand("choco -v");
-    return true;
-  } catch (error) {
-    return false;
-  }
+  return runCommand("choco -v") !== null;
 };
 
 /**
- * Install Chocolatey if not installed
+ * Install Chocolatey
  */
 const installChocolatey = () => {
   console.log("🟡 Chocolatey not found. Installing...");
@@ -45,6 +63,19 @@ const installChocolatey = () => {
 };
 
 /**
+ * Add a directory to the system PATH (if not already included)
+ */
+const addToSystemPath = (dir) => {
+  if (!process.env.PATH.includes(dir)) {
+    console.log(`🔧 Adding ${dir} to system PATH...`);
+    execSync(`setx PATH "%PATH%;${dir}" /M`, { stdio: "inherit" });
+    console.log(`✅ ${dir} added to system PATH.`);
+  } else {
+    console.log(`✅ ${dir} is already in system PATH.`);
+  }
+};
+
+/**
  * Check if Memurai (Redis for Windows) is installed
  */
 const isMemuraiInstalled = () => {
@@ -52,13 +83,13 @@ const isMemuraiInstalled = () => {
 };
 
 /**
- * Install Memurai using Chocolatey
+ * Install Memurai Developer Edition using Chocolatey
  */
 const installMemurai = () => {
   console.log("🟡 Memurai not found. Installing...");
   try {
-    execSync("choco install memurai -y", { stdio: "inherit" });
-    console.log("✅ Memurai installed successfully.");
+    execSync("choco install memurai-developer -y", { stdio: "inherit" });
+    console.log("✅ Memurai Developer Edition installed successfully.");
   } catch (error) {
     console.error("❌ Failed to install Memurai:", error.message);
     process.exit(1);
@@ -69,12 +100,7 @@ const installMemurai = () => {
  * Check if Redis CLI is installed
  */
 const isRedisCLIInstalled = () => {
-  try {
-    runCommand("redis-cli --version");
-    return true;
-  } catch (error) {
-    return false;
-  }
+  return runCommand("redis-cli --version") !== null;
 };
 
 /**
@@ -95,10 +121,13 @@ const installRedisCLI = () => {
  * Main function to install required tools
  */
 const installDependencies = () => {
-  if (!isWindows) {
+  if (os.platform() !== "win32") {
     console.error("❌ This script is designed for Windows only.");
     process.exit(1);
   }
+
+  // Ensure the script runs with admin privileges
+  runAsAdmin();
 
   console.log("🔍 Checking dependencies...");
 
@@ -108,11 +137,17 @@ const installDependencies = () => {
     console.log("✅ Chocolatey is already installed.");
   }
 
+  // Ensure Chocolatey is in the system PATH
+  addToSystemPath("C:\\ProgramData\\chocolatey\\bin");
+
   if (!isMemuraiInstalled()) {
     installMemurai();
   } else {
     console.log("✅ Memurai is already installed.");
   }
+
+  // Ensure Memurai is in the system PATH
+  addToSystemPath("C:\\Program Files\\Memurai");
 
   if (!isRedisCLIInstalled()) {
     installRedisCLI();
@@ -123,5 +158,5 @@ const installDependencies = () => {
   console.log("🎉 All dependencies are installed and ready to use!");
 };
 
-// Run the installation
+// Run the installation process
 installDependencies();

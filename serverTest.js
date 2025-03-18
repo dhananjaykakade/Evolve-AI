@@ -3,7 +3,7 @@
  import config from "./src/config/config.js";
  import { logger } from "./src/utils/logger.js";
 
-const PORT = config.PORT;
+const { PORT } = config;
 
 /**
  * Run Pre-Start Checks
