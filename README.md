@@ -47,7 +47,7 @@ Since **Redis does not natively support Windows**, we use **Memurai** as a drop-
 Run the following command to install Memurai and Redis CLI using Chocolatey:
 
 ```powershell
-choco install memurai redis-cli
+choco install memurai-developer -y
 ```
 
 Once installed, start Memurai:
