@@ -297,3 +297,23 @@ export const getUserProfile = apiHandler(async (req, res) => {
     // 3️⃣ Return user profile
     ResponseHandler.success(res, 200, "User profile fetched successfully", { user });
 });
+
+// update user profile
+/**
+ * Update the authenticated user's profile
+ * @route PUT /api/auth/me
+ * @access Private (requires access token)
+ */
+
+export const updateUserProfile = apiHandler(async (req, res) => {
+    // Extract user ID from the request (added by auth middleware)
+    const userId = req.user.Id;
+    const { email, password } = req.body;
+    const updatedUser = await prisma.user.update({
+        where: { Id: userId },
+        data: { email, password }
+    });
+    ResponseHandler.success(res, 200, "Profile updated successfully", { user: updatedUser });
+}
+);
+
